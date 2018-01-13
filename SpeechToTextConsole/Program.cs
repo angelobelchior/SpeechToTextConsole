@@ -6,7 +6,7 @@ namespace SpeechToTextConsole
     {
         static void Main(string[] args)
         {
-            var path = @"caminho para o arquivo WAV";
+            var path = @"C:\repo\SpeechToTextConsole\Input\wav\C.wav";
             if (args.Length > 0)
                 path = args[0];
 

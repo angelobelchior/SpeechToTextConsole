@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Configuration;
 using System.IO;
+using System.Collections.Generic;
 
 namespace SpeechToTextConsole
 {
@@ -14,6 +15,7 @@ namespace SpeechToTextConsole
 
         private readonly DataRecognitionClient _client;
         private readonly string _file;
+        private readonly List<string> _phrases = new List<string>();
 
         public event EventHandler<EventArgs> OnFinish;
 
@@ -48,6 +50,15 @@ namespace SpeechToTextConsole
             this._client.OnConversationError += OnConversationError;
         }
 
+        public void Dispose()
+        {
+            try
+            {
+                this._client.Dispose();
+            }
+            catch { }
+        }
+
         public void Execute()
         {
             using (var fileStream = new FileStream(this._file, FileMode.Open, FileAccess.Read))
@@ -72,45 +83,49 @@ namespace SpeechToTextConsole
         }
 
         private void OnConversationError(object sender, SpeechErrorEventArgs e)
-            => this.WriteFile($"Error -> {e.SpeechErrorCode} - {e.SpeechErrorText}");
+            => this.Log($"Error -> {e.SpeechErrorCode} - {e.SpeechErrorText}");
 
         private void OnResponseReceived(object sender, SpeechResponseEventArgs e)
         {
-            var phrases = e?.PhraseResponse
-                           ?.Results
-                           ?.Select(r => r.DisplayText)
-                           ?.ToList();
+            this.Log(e.PhraseResponse.RecognitionStatus);
+            if (e.PhraseResponse.RecognitionStatus == RecognitionStatus.RecognitionSuccess)
+            {
+                void add(RecognizedPhrase phrase)
+                {
+                    this._phrases.Add(phrase.LexicalForm);
+                    this.Log(phrase.LexicalForm);
+                };
 
-            var content = string.Empty;
-            if (phrases != null)
-                content = string.Join("\n", phrases);
+                e.PhraseResponse
+                 .Results
+                 .ToList()
+                 ?.ForEach(add);
+            }
 
             if (e.PhraseResponse.RecognitionStatus == RecognitionStatus.EndOfDictation ||
                 e.PhraseResponse.RecognitionStatus == RecognitionStatus.DictationEndSilenceTimeout)
             {
-                this.WriteFile(content);
+                this.WriteFile();
                 this.OnFinish?.Invoke(this, new EventArgs());
             }
         }
 
-        private void WriteFile(string content)
+        private void WriteFile()
         {
             try
             {
                 var fileName = $"{Guid.NewGuid().ToString()}.txt";
                 var path = Path.Combine(OUTPUT_FOLDER, fileName);
-                File.AppendAllText(path, content);
+                if (this._phrases.Count > 0)
+                {
+                    var content = string.Join("\n", this._phrases);
+                    File.AppendAllText(path, content);
+                }
             }
             catch { }
         }
 
-        public void Dispose()
-        {
-            try
-            {
-                this._client.Dispose();
-            }
-            catch { }
-        }
+        private void Log(object message)
+            => Console.WriteLine($"{DateTime.Now.ToString("dd/MM/yyyy hh:mm:dd")} - {message}");
     }
 }
