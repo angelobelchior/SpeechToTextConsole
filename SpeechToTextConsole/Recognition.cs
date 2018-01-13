@@ -61,6 +61,7 @@ namespace SpeechToTextConsole
 
         public void Execute()
         {
+            this.Log("Abrindo o Arquivo");
             using (var fileStream = new FileStream(this._file, FileMode.Open, FileAccess.Read))
             {
                 var bytesRead = 0;
@@ -68,6 +69,7 @@ namespace SpeechToTextConsole
 
                 try
                 {
+                    this.Log("Enviado o áudio");
                     do
                     {
                         bytesRead = fileStream.Read(buffer, 0, buffer.Length);
@@ -78,16 +80,16 @@ namespace SpeechToTextConsole
                 finally
                 {
                     this._client.EndAudio();
+                    this.Log("Fim do envio do Áudio");
                 }
             }
         }
 
         private void OnConversationError(object sender, SpeechErrorEventArgs e)
-            => this.Log($"Error -> {e.SpeechErrorCode} - {e.SpeechErrorText}");
+            => this.Log($"ERROR: {e.SpeechErrorCode} - {e.SpeechErrorText}");
 
         private void OnResponseReceived(object sender, SpeechResponseEventArgs e)
         {
-            this.Log(e.PhraseResponse.RecognitionStatus);
             if (e.PhraseResponse.RecognitionStatus == RecognitionStatus.RecognitionSuccess)
             {
                 void add(RecognizedPhrase phrase)
@@ -101,6 +103,8 @@ namespace SpeechToTextConsole
                  .ToList()
                  ?.ForEach(add);
             }
+            else
+                this.Log(e.PhraseResponse.RecognitionStatus);
 
             if (e.PhraseResponse.RecognitionStatus == RecognitionStatus.EndOfDictation ||
                 e.PhraseResponse.RecognitionStatus == RecognitionStatus.DictationEndSilenceTimeout)
