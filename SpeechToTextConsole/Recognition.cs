@@ -81,6 +81,7 @@ namespace SpeechToTextConsole
                 {
                     this._client.EndAudio();
                     this.Log("Fim do envio do Áudio");
+                    this.Log("Aguardando o processamento...");
                 }
             }
         }
