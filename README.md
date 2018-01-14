@@ -22,7 +22,7 @@ Você pode criar um *.exe e utilizar como um Job no Windows ou até mesmo na nú
 
 ## Chaves de Segurança para o Serviço
 
-Você precisará informar a chave de segurança para poder utilizar os serviço.
+Você precisará informar a chave de segurança para poder utilizar o serviço.
 No arquivo [app.config](https://github.com/angelobelchior/SpeechToTextConsole/blob/master/SpeechToTextConsole/app.config) você vai precisar informar três valores:
 
 ```xml
