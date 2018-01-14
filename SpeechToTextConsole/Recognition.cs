@@ -10,7 +10,7 @@ namespace SpeechToTextConsole
     public class Recognition : IDisposable
     {
         private static readonly string SPEECH_TO_TEXT_KEY;
-        private static readonly string DEFAULT_LOCALE;
+        private static readonly string SPEECH_TO_TEXT_LANGUAGE;
         private static readonly string OUTPUT_FOLDER;
 
         private readonly DataRecognitionClient _client;
@@ -25,7 +25,7 @@ namespace SpeechToTextConsole
             if (string.IsNullOrEmpty(SPEECH_TO_TEXT_KEY))
                 throw new ArgumentNullException("SpeechToTextKey");
 
-            DEFAULT_LOCALE = ConfigurationManager.AppSettings["DefaultLocale"];
+            SPEECH_TO_TEXT_LANGUAGE = ConfigurationManager.AppSettings["Language"];
             if (string.IsNullOrEmpty(SPEECH_TO_TEXT_KEY))
                 throw new ArgumentNullException("DefaultLocale");
 
@@ -40,10 +40,12 @@ namespace SpeechToTextConsole
                 throw new ArgumentNullException(nameof(file));
 
             this._file = file;
+            if (!File.Exists(file))
+                throw new FileNotFoundException("File not Found", file);
 
             this._client = SpeechRecognitionServiceFactory.CreateDataClient(
                 SpeechRecognitionMode.LongDictation,
-                DEFAULT_LOCALE,
+                SPEECH_TO_TEXT_LANGUAGE,
                 SPEECH_TO_TEXT_KEY
             );
             this._client.OnResponseReceived += OnResponseReceived;

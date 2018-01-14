@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace SpeechToTextConsole
 {
@@ -6,7 +7,10 @@ namespace SpeechToTextConsole
     {
         static void Main(string[] args)
         {
-            var path = @"C:\repo\SpeechToTextConsole\Input\wav\C.wav";
+            var path = string.Empty;
+#if DEBUG
+            path = Path.Combine(Environment.CurrentDirectory, "Test", "nerdologia.wav"); //testes
+#endif
             if (args.Length > 0)
                 path = args[0];
 
